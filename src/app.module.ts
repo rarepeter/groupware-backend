@@ -13,7 +13,10 @@ import { JwtModule } from '@nestjs/jwt';
     FirebaseModule,
     FirestoreModule,
     ConfigModule.forRoot({ isGlobal: true }),
-    JwtModule.register({ global: true }),
+    JwtModule.register({
+      global: true,
+      secret: process.env.JWT_SECRET_KEY as string,
+    }),
   ],
 })
 export class AppModule {}

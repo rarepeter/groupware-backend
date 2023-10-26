@@ -5,7 +5,7 @@ import {
   UUID,
 } from '../../types/global.type';
 
-const allPossibleUserRoles = ['admin', 'employee', 'visitor'];
+const allPossibleUserRoles = ['admin', 'employee', 'visitor'] as const;
 type UserRole = (typeof allPossibleUserRoles)[number];
 
 type User = {

@@ -44,4 +44,26 @@ class EditUserSelfDto
   lastName: User['lastName'];
 }
 
-export { CreateUserDtoAdmin, CreateUserDtoVisitor, EditUserSelfDto };
+const allUserFrontEndDtoProperties = [
+  'email',
+  'contactNumber',
+  'firstName',
+  'lastName',
+  'role',
+  'userId',
+] as const;
+type FrontEndUserDto = Pick<
+  User,
+  (typeof allUserFrontEndDtoProperties)[number]
+>;
+
+type UserWithoutPassword = Omit<User, 'password'>;
+
+export {
+  CreateUserDtoAdmin,
+  CreateUserDtoVisitor,
+  EditUserSelfDto,
+  allUserFrontEndDtoProperties,
+  FrontEndUserDto,
+  UserWithoutPassword,
+};

@@ -1,7 +1,9 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { FirestoreService } from './firestore.service';
 
+@Global()
 @Module({
-  providers: [FirestoreService]
+  providers: [FirestoreService],
+  exports: [FirestoreService],
 })
 export class FirestoreModule {}

@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
+import { FirestoreModule } from '../firestore/firestore.module';
 
 @Module({
   providers: [AuthService],
-  controllers: [AuthController]
+  controllers: [AuthController],
+  imports: [FirestoreModule],
 })
 export class AuthModule {}
