@@ -1,3 +1,4 @@
+import { IFile } from '../../file/interface/file.interface';
 import {
   ContactNumber,
   Email,
@@ -16,6 +17,7 @@ type User = {
   email: Email;
   password: EncryptedPassword;
   contactNumber: ContactNumber;
+  filesIds: Array<IFile['fileId']>;
 };
 
 export { User, allPossibleUserRoles };

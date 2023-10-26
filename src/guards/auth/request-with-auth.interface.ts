@@ -7,6 +7,7 @@ const allRequestWithAuthUserProperties = [
   'email',
   'firstName',
   'lastName',
+  'filesIds',
 ] as const;
 type AuthenticatedUser = Pick<
   User,

@@ -7,5 +7,6 @@ import { FirestoreModule } from '../firestore/firestore.module';
   providers: [AuthService],
   controllers: [AuthController],
   imports: [FirestoreModule],
+  exports: [AuthModule],
 })
 export class AuthModule {}

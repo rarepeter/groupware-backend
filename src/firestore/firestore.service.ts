@@ -6,6 +6,8 @@ import { AuthToken, UserAuthToken } from '../auth/interface/auth.interface';
 import { getCurrentTimeInSeconds, oneWeekInSeconds } from '../lib/time';
 import { InternalServerErrorHttpException } from '../api-http-exceptions/ApiHttpExceptions';
 import { UserWithoutPassword } from '../user/dto/user.dto';
+import { IFile } from '../file/interface/file.interface';
+import { FieldValue } from 'firebase-admin/firestore';
 
 @Injectable()
 export class FirestoreService implements OnApplicationBootstrap {
@@ -86,6 +88,7 @@ export class FirestoreService implements OnApplicationBootstrap {
         password:
           '$2a$04$4JywnWUJC1/AtZf8uiNzTuNOZ8ge/QVoNxCLjmkzqh1PlbtEOqVEy',
         role: 'admin',
+        filesIds: [],
       };
       const docRef = usersCollectionRef.doc();
       batch.set(docRef, user);
@@ -189,8 +192,82 @@ export class FirestoreService implements OnApplicationBootstrap {
       lastName: userData.lastName,
       role: userData.role,
       userId: userData.userId,
+      filesIds: userData.filesIds,
     };
 
     return userWithoutPassword;
+  }
+
+  // FILES OPERATIONS
+
+  async addPersonalFiles(files: IFile[]) {
+    const fileCollectionRef = this.db.collection(
+      this.collectionNames.FILES_COLLECTION,
+    );
+    const batch = this.db.batch();
+
+    files.forEach((file) => {
+      const docRef = fileCollectionRef.doc();
+      batch.set(docRef, file);
+    });
+
+    await batch.commit();
+
+    const createdFileIds = files.map((file) => file.fileId);
+
+    const createdFilesSnippet = await fileCollectionRef
+      .where('fileId', 'in', createdFileIds)
+      .get();
+
+    if (createdFilesSnippet.empty) return null;
+
+    const userSnippet = await this.db
+      .collection(this.collectionNames.USERS_COLLECTION)
+      .where('userId', '==', files[0].uploadedByUserId)
+      .get();
+
+    if (userSnippet.empty) return null;
+
+    await userSnippet.docs[0].ref.update({
+      filesIds: FieldValue.arrayUnion(...createdFileIds),
+    });
+
+    const filesData = createdFilesSnippet.docs.map((doc) => {
+      const docData = doc.data() as IFile;
+
+      return docData;
+    });
+
+    return filesData;
+  }
+
+  async getUploadedFile(fileId: IFile['fileId']) {
+    const snippet = await this.db
+      .collection(this.collectionNames.FILES_COLLECTION)
+      .where('fileId', '==', fileId)
+      .get();
+
+    if (snippet.empty) return null;
+
+    const docData = snippet.docs[0].data() as IFile;
+
+    return docData;
+  }
+
+  async getFilesByIds(fileIds: Array<IFile['fileId']>) {
+    const snippet = await this.db
+      .collection(this.collectionNames.FILES_COLLECTION)
+      .where('fileId', 'in', fileIds)
+      .get();
+
+    if (snippet.empty) return [];
+
+    const files: IFile[] = snippet.docs.map((doc) => {
+      const docData = doc.data() as IFile;
+
+      return docData;
+    });
+
+    return files;
   }
 }

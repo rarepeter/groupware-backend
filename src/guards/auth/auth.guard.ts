@@ -1,12 +1,8 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import {
-  InternalServerErrorHttpException,
-  UnauthorizedHttpException,
-} from '../../api-http-exceptions/ApiHttpExceptions';
+import { UnauthorizedHttpException } from '../../api-http-exceptions/ApiHttpExceptions';
 import { FirestoreService } from '../../firestore/firestore.service';
-import { AuthService } from '../../auth/auth.service';
 import { RequestWithAuth } from './request-with-auth.interface';
 
 @Injectable()
@@ -15,16 +11,26 @@ export class AuthenticationGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private config: ConfigService,
-    private authService: AuthService,
     private db: FirestoreService,
   ) {
-    this.isProduction = config.get('NODE_ENV') === 'prod';
+    this.isProduction = this.config.get('NODE_ENV') === 'prod';
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<RequestWithAuth>();
     const response = context.switchToHttp().getResponse<Response>();
     const authToken = request.cookies['auth_token'];
+
+    // request.user = {
+    //   email: 'contact@petergamali.com',
+    //   firstName: 'Petru',
+    //   lastName: "Gamali",
+    //   role: 'admin',
+    //   filesIds: [],
+    //   userId: 'aec0a88a-c0b7-4207-96cc-7f35f13b0bd9',
+    // };
+
+    // return true;
 
     if (!authToken) throw new UnauthorizedHttpException();
 
@@ -44,6 +50,7 @@ export class AuthenticationGuard implements CanActivate {
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
+        filesIds: user.filesIds,
         userId: user.userId,
       };
 

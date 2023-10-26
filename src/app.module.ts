@@ -5,6 +5,7 @@ import { FirebaseModule } from './firebase/firebase.module';
 import { FirestoreModule } from './firestore/firestore.module';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { FileModule } from './file/file.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { JwtModule } from '@nestjs/jwt';
       global: true,
       secret: process.env.JWT_SECRET_KEY as string,
     }),
+    FileModule,
   ],
 })
 export class AppModule {}
