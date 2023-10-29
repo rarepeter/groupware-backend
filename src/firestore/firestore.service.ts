@@ -8,6 +8,8 @@ import { InternalServerErrorHttpException } from '../api-http-exceptions/ApiHttp
 import { UserWithoutPassword } from '../user/dto/user.dto';
 import { IFile } from '../file/interface/file.interface';
 import { FieldValue } from 'firebase-admin/firestore';
+import { CreateJobDto } from '../job/dto/job.dto';
+import { Job } from '../job/interface/job.interface';
 
 @Injectable()
 export class FirestoreService implements OnApplicationBootstrap {
@@ -19,6 +21,7 @@ export class FirestoreService implements OnApplicationBootstrap {
     USERS_COLLECTION: 'users',
     USERS_AUTH_TOKENS_COLLECTION: 'auth_tokens',
     FILES_COLLECTION: 'files',
+    JOBS_COLLECTION: 'jobs',
   };
 
   constructor(
@@ -73,6 +76,11 @@ export class FirestoreService implements OnApplicationBootstrap {
         firstName: 'Petru',
         lastName: 'Gamali',
       },
+      {
+        email: 'eric.andrei.1703@gmail.com',
+        firstName: 'Eric-Andrei',
+        lastName: 'Ailene',
+      },
     ];
 
     const batch = this.db.batch();
@@ -95,6 +103,59 @@ export class FirestoreService implements OnApplicationBootstrap {
     });
 
     await batch.commit();
+  }
+
+  // JOB OPERATIONS
+
+  async getAllJobs() {
+    const snippet = await this.db
+      .collection(this.collectionNames.JOBS_COLLECTION)
+      .get();
+
+    if (snippet.empty) return [];
+
+    const docsData = snippet.docs.map((doc) => {
+      const docData = doc.data() as Job;
+
+      return docData;
+    });
+
+    return docsData;
+  }
+
+  async createJob(createJobDto: CreateJobDto, createdByUserId: User['userId']) {
+    const jobId = uuidv4();
+
+    const currentTimeInSeconds = getCurrentTimeInSeconds();
+    const newJob: Job = {
+      applicants: [],
+      createdAtTimestamp: currentTimeInSeconds,
+      createdByUserId,
+      jobId,
+      ...createJobDto,
+    };
+
+    const createdJobRef = await this.db
+      .collection(this.collectionNames.JOBS_COLLECTION)
+      .add(newJob);
+    const createdJobData = (await createdJobRef.get()).data() as Job;
+
+    return createdJobData;
+  }
+
+  async deleteJob(jobId: Job['jobId']) {
+    const snippet = await this.db
+      .collection(this.collectionNames.JOBS_COLLECTION)
+      .where('jobId', '==', jobId)
+      .get();
+
+    if (snippet.empty) return null;
+
+    const docData = snippet.docs[0].data() as Job;
+
+    await snippet.docs[0].ref.delete();
+
+    return docData;
   }
 
   // AUTH TOKENS OPERATIONS

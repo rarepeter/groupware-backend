@@ -10,6 +10,8 @@ type PlainPassword = string;
 
 type ContactNumber = string;
 
+type CalendarDate = string; // 25/10/2023
+
 export {
   UUID,
   SecondsTimestamp,
@@ -17,4 +19,5 @@ export {
   EncryptedPassword,
   ContactNumber,
   PlainPassword,
+  CalendarDate,
 };
