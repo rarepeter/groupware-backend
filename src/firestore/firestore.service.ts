@@ -10,6 +10,8 @@ import { IFile } from '../file/interface/file.interface';
 import { FieldValue } from 'firebase-admin/firestore';
 import { CreateJobDto } from '../job/dto/job.dto';
 import { Job } from '../job/interface/job.interface';
+import { CreateVacationDto } from '../vacation/dto/vacation.dto';
+import { Vacation } from '../vacation/interface/vacation.interface';
 
 @Injectable()
 export class FirestoreService implements OnApplicationBootstrap {
@@ -22,6 +24,7 @@ export class FirestoreService implements OnApplicationBootstrap {
     USERS_AUTH_TOKENS_COLLECTION: 'auth_tokens',
     FILES_COLLECTION: 'files',
     JOBS_COLLECTION: 'jobs',
+    VACATIONS_COLLECTION: 'users_vacations',
   };
 
   constructor(
@@ -103,6 +106,53 @@ export class FirestoreService implements OnApplicationBootstrap {
     });
 
     await batch.commit();
+  }
+
+  // VACATIONS OPERATIONS
+
+  async getUserVacations(userId: User['userId']) {
+    const snippet = await this.db
+      .collection(this.collectionNames.VACATIONS_COLLECTION)
+      .where('userId', '==', userId)
+      .get();
+
+    if (snippet.empty) return [];
+
+    const docsData = snippet.docs.map((doc) => {
+      const docData = doc.data() as Vacation;
+
+      return docData;
+    });
+
+    return docsData;
+  }
+
+  async createVacation(
+    createVacationDto: CreateVacationDto,
+    userId: User['userId'],
+  ) {
+    const vacationsCollectionRef = this.db.collection(
+      this.collectionNames.VACATIONS_COLLECTION,
+    );
+    const currentTimeInSeconds = getCurrentTimeInSeconds();
+    const vacationId = uuidv4();
+    const newVacation: Vacation = {
+      createdAtTimestamp: currentTimeInSeconds,
+      createdByUserId: userId,
+      vacationId,
+      ...createVacationDto,
+    };
+    await vacationsCollectionRef.add(newVacation);
+
+    const newVacationSnippet = await vacationsCollectionRef
+      .where('vacationId', '==', vacationId)
+      .get();
+
+    if (newVacationSnippet.empty) return null;
+
+    const newVacationData = newVacationSnippet.docs[0].data() as Vacation;
+
+    return newVacationData;
   }
 
   // JOB OPERATIONS
