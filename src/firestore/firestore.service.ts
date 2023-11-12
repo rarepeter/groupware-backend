@@ -5,7 +5,7 @@ import { User } from '../user/interface/user.interface';
 import { AuthToken, UserAuthToken } from '../auth/interface/auth.interface';
 import { getCurrentTimeInSeconds, oneWeekInSeconds } from '../lib/time';
 import { InternalServerErrorHttpException } from '../api-http-exceptions/ApiHttpExceptions';
-import { UserWithoutPassword } from '../user/dto/user.dto';
+import { EditUserSelfDto, UserWithoutPassword } from '../user/dto/user.dto';
 import { IFile } from '../file/interface/file.interface';
 import { FieldValue } from 'firebase-admin/firestore';
 import { CreateJobDto } from '../job/dto/job.dto';
@@ -307,6 +307,36 @@ export class FirestoreService implements OnApplicationBootstrap {
     };
 
     return userWithoutPassword;
+  }
+
+  async modifyUserSelf(userId: User['userId'], modifySelfDto: EditUserSelfDto) {
+    const usersCollectionRef = this.db.collection(
+      this.collectionNames.USERS_COLLECTION,
+    );
+    const userSnippet = await usersCollectionRef
+      .where('userId', '==', userId)
+      .get();
+
+    if (userSnippet.empty) return null;
+
+    const oldUserInfo = userSnippet.docs[0].data() as User;
+
+    const newUserData: User = {
+      ...oldUserInfo,
+      ...modifySelfDto,
+    };
+
+    await userSnippet.docs[0].ref.update(newUserData);
+
+    const newUserSnippet = await usersCollectionRef
+      .where('userId', '==', userId)
+      .get();
+
+    if (newUserSnippet.empty) return null;
+
+    const newUserInfo = newUserSnippet.docs[0].data() as User;
+
+    return newUserInfo;
   }
 
   // FILES OPERATIONS
