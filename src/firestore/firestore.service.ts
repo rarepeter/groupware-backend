@@ -12,6 +12,8 @@ import { CreateJobDto } from '../job/dto/job.dto';
 import { Job } from '../job/interface/job.interface';
 import { CreateVacationDto } from '../vacation/dto/vacation.dto';
 import { Vacation } from '../vacation/interface/vacation.interface';
+import { CreateContactUsRequestDto } from '../request/dto/request.dto';
+import { ContactUsRequest } from '../request/interface/request.interface';
 
 @Injectable()
 export class FirestoreService implements OnApplicationBootstrap {
@@ -25,6 +27,7 @@ export class FirestoreService implements OnApplicationBootstrap {
     FILES_COLLECTION: 'files',
     JOBS_COLLECTION: 'jobs',
     VACATIONS_COLLECTION: 'users_vacations',
+    CONTACT_US_REQUESTS_COLLECTION: 'contact_us_requests',
   };
 
   constructor(
@@ -106,6 +109,25 @@ export class FirestoreService implements OnApplicationBootstrap {
     });
 
     await batch.commit();
+  }
+
+  // CONTACT US REQUESTS OPERATIONS
+
+  async createContactUsRequest(
+    createContactUsRequestDto: CreateContactUsRequestDto,
+  ) {
+    const contactUsRequestsCollectionRef = this.db.collection(
+      this.collectionNames.CONTACT_US_REQUESTS_COLLECTION,
+    );
+
+    const contactUsRequest: ContactUsRequest = {
+      ...createContactUsRequestDto,
+      requestId: uuidv4(),
+    };
+
+    await contactUsRequestsCollectionRef.add(contactUsRequest);
+
+    return contactUsRequest;
   }
 
   // VACATIONS OPERATIONS
