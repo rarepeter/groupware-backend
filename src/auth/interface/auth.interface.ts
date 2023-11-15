@@ -13,6 +13,13 @@ class AuthDto {
   password: PlainPassword;
 }
 
+class SignUpDto {
+  @IsEmail()
+  email: Email;
+  @IsString()
+  password: PlainPassword;
+}
+
 type JwtAuthToken = string;
 
 type AuthToken = JwtAuthToken;
@@ -24,4 +31,4 @@ type UserAuthToken = {
   expiresAtTimestamp: SecondsTimestamp;
 };
 
-export { AuthDto, AuthToken, UserAuthToken };
+export { AuthDto, AuthToken, UserAuthToken, SignUpDto };

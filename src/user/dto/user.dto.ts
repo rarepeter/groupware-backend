@@ -34,13 +34,13 @@ class CreateUserDtoVisitor implements Pick<User, 'email' | 'password'> {
 class EditUserSelfDto
   implements Pick<User, 'email' | 'firstName' | 'lastName' | 'contactNumber'>
 {
-  // @MaxLength(contactNumberMaxLength)
+  @MaxLength(contactNumberMaxLength)
   contactNumber: User['contactNumber'];
   @IsEmail()
   email: User['email'];
-  // @MaxLength(firstNameMaxLength)
+  @MaxLength(firstNameMaxLength)
   firstName: User['firstName'];
-  // @MaxLength(lastNameMaxLength)
+  @MaxLength(lastNameMaxLength)
   lastName: User['lastName'];
 }
 

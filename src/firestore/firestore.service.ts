@@ -313,6 +313,41 @@ export class FirestoreService implements OnApplicationBootstrap {
 
   // USERS OPERATIONS
 
+  async createUser(newUserDto: Omit<User, 'userId'>) {
+    const usersCollectionRef = this.db.collection(
+      this.collectionNames.USERS_COLLECTION,
+    );
+
+    const newUserId = uuidv4();
+
+    const newUser: User = {
+      ...newUserDto,
+      userId: newUserId,
+    };
+
+    await usersCollectionRef.add(newUser);
+
+    const newUserSnippet = await usersCollectionRef
+      .where('userId', '==', newUserId)
+      .get();
+
+    if (newUserSnippet.empty) return null;
+
+    const userData = newUserSnippet.docs[0].data() as User;
+
+    const safeUserData: UserWithoutPassword = {
+      contactNumber: userData.contactNumber,
+      email: userData.email,
+      filesIds: userData.filesIds,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      role: userData.role,
+      userId: userData.userId,
+    };
+
+    return safeUserData;
+  }
+
   async dangerouslyGetUserByEmail(userEmail: User['email']) {
     const snippet = await this.db
       .collection(this.collectionNames.USERS_COLLECTION)

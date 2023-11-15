@@ -8,7 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthDto } from './interface/auth.interface';
+import { AuthDto, SignUpDto } from './interface/auth.interface';
 import { constructResponseJson } from '../lib/respones';
 import { InternalServerErrorHttpException } from '../api-http-exceptions/ApiHttpExceptions';
 import { Response } from 'express';
@@ -44,5 +44,21 @@ export class AuthController {
     await this.authService.signOut(response, userId);
 
     return;
+  }
+
+  @Post('sign-up')
+  async signUp(
+    @Body() signUpDto: SignUpDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const createdUserFrontEndDto = await this.authService.signUp(
+      signUpDto,
+      response,
+    );
+
+    if (createdUserFrontEndDto === null)
+      throw new InternalServerErrorHttpException();
+
+    return constructResponseJson(createdUserFrontEndDto);
   }
 }
