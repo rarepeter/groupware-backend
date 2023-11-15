@@ -1,10 +1,22 @@
-import { Body, Controller, Get, Put, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Put,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { RequestWithAuth } from '../guards/auth/request-with-auth.interface';
 import { constructResponseJson } from '../lib/respones';
-import { InternalServerErrorHttpException } from '../api-http-exceptions/ApiHttpExceptions';
+import {
+  InternalServerErrorHttpException,
+  NotEnoughPermissionsHttpException,
+} from '../api-http-exceptions/ApiHttpExceptions';
 import { AuthenticationGuard } from '../guards/auth/auth.guard';
 import { EditUserSelfDto } from './dto/user.dto';
+import { User } from './interface/user.interface';
 
 @UseGuards(AuthenticationGuard)
 @Controller('users')
@@ -41,5 +53,21 @@ export class UserController {
     if (userModifiedInfo === null) throw new InternalServerErrorHttpException();
 
     return constructResponseJson(userModifiedInfo);
+  }
+
+  @Get(':userId')
+  async getUser(
+    @Req() requestWithAuth: RequestWithAuth,
+    @Param('userId') userId: User['userId'],
+  ) {
+    const {
+      user: { role },
+    } = requestWithAuth;
+
+    if (role !== 'admin') throw new NotEnoughPermissionsHttpException();
+
+    const user = await this.userService.getUserPersonalInfo(userId);
+
+    return user;
   }
 }
