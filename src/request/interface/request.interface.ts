@@ -1,4 +1,5 @@
 import { Email, UUID } from '../../types/global.type';
+import { User } from '../../user/interface/user.interface';
 
 type ContactUsRequest = {
   requestId: UUID;
@@ -7,4 +8,10 @@ type ContactUsRequest = {
   requesterMessage: string;
 };
 
-export { ContactUsRequest };
+type UserRequest = {
+  requestId: UUID;
+  requesterId: User['userId'];
+  message: string;
+};
+
+export { ContactUsRequest, UserRequest };

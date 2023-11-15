@@ -1,10 +1,16 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { RequestService } from './request.service';
-import { CreateContactUsRequestDto } from './dto/request.dto';
+import {
+  CreateContactUsRequestDto,
+  CreateUserRequestDto,
+} from './dto/request.dto';
 import { constructResponseJson } from '../lib/respones';
 import { RequestWithAuth } from '../guards/auth/request-with-auth.interface';
 import { AuthenticationGuard } from '../guards/auth/auth.guard';
-import { NotEnoughPermissionsHttpException } from '../api-http-exceptions/ApiHttpExceptions';
+import {
+  InternalServerErrorHttpException,
+  NotEnoughPermissionsHttpException,
+} from '../api-http-exceptions/ApiHttpExceptions';
 
 @Controller('requests')
 export class RequestController {
@@ -34,5 +40,25 @@ export class RequestController {
     const contactUsRequests = await this.requestService.getContactUsRequests();
 
     return constructResponseJson(contactUsRequests);
+  }
+
+  @UseGuards(AuthenticationGuard)
+  @Post('new')
+  async createRequest(
+    @Req() requestWithAuth: RequestWithAuth,
+    @Body() createRequestDto: CreateUserRequestDto,
+  ) {
+    const {
+      user: { userId },
+    } = requestWithAuth;
+
+    const createdRequest = await this.requestService.createUserRequest(
+      createRequestDto,
+      userId,
+    );
+
+    if (createdRequest === null) throw new InternalServerErrorHttpException();
+
+    constructResponseJson(createdRequest);
   }
 }

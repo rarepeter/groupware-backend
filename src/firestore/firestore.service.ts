@@ -12,8 +12,14 @@ import { CreateJobDto } from '../job/dto/job.dto';
 import { Job } from '../job/interface/job.interface';
 import { CreateVacationDto } from '../vacation/dto/vacation.dto';
 import { Vacation } from '../vacation/interface/vacation.interface';
-import { CreateContactUsRequestDto } from '../request/dto/request.dto';
-import { ContactUsRequest } from '../request/interface/request.interface';
+import {
+  CreateContactUsRequestDto,
+  CreateUserRequestDto,
+} from '../request/dto/request.dto';
+import {
+  ContactUsRequest,
+  UserRequest,
+} from '../request/interface/request.interface';
 
 @Injectable()
 export class FirestoreService implements OnApplicationBootstrap {
@@ -28,6 +34,7 @@ export class FirestoreService implements OnApplicationBootstrap {
     JOBS_COLLECTION: 'jobs',
     VACATIONS_COLLECTION: 'users_vacations',
     CONTACT_US_REQUESTS_COLLECTION: 'contact_us_requests',
+    USER_REQUESTS_COLLECTION: 'user_requests',
   };
 
   constructor(
@@ -109,6 +116,36 @@ export class FirestoreService implements OnApplicationBootstrap {
     });
 
     await batch.commit();
+  }
+
+  // USER REQUESTS
+
+  async createUserRequest(
+    createRequestDto: CreateUserRequestDto,
+    requesterId: User['userId'],
+  ) {
+    const userRequestsCollectionRef = this.db.collection(
+      this.collectionNames.USER_REQUESTS_COLLECTION,
+    );
+
+    const newId = uuidv4();
+    const userRequest: UserRequest = {
+      ...createRequestDto,
+      requesterId,
+      requestId: newId,
+    };
+
+    await userRequestsCollectionRef.add(userRequest);
+
+    const newRequestSnippet = await userRequestsCollectionRef
+      .where('requestId', '==', newId)
+      .get();
+
+    if (newRequestSnippet.empty) return null;
+
+    const docData = newRequestSnippet.docs[0].data() as UserRequest;
+
+    return docData;
   }
 
   // CONTACT US REQUESTS OPERATIONS
