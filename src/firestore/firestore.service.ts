@@ -148,6 +148,22 @@ export class FirestoreService implements OnApplicationBootstrap {
     return docData;
   }
 
+  async applyToJob(jobId: Job['jobId'], applicantId: User['userId']) {
+    const jobsCollectionRef = this.db.collection(
+      this.collectionNames.JOBS_COLLECTION,
+    );
+
+    const jobSnippet = await jobsCollectionRef
+      .where('jobId', '==', jobId)
+      .get();
+
+    if (jobSnippet === null) return null;
+
+    await jobSnippet.docs[0].ref.update({
+      applicants: FieldValue.arrayUnion(applicantId),
+    });
+  }
+
   // CONTACT US REQUESTS OPERATIONS
 
   async createContactUsRequest(

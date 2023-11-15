@@ -55,4 +55,18 @@ export class JobController {
 
     return constructResponseJson(deletedJob);
   }
+
+  @Get('apply/:jobId')
+  async applyToJob(
+    @Req() requestWithAuth: RequestWithAuth,
+    @Param('jobId') jobId: Job['jobId'],
+  ) {
+    const {
+      user: { userId },
+    } = requestWithAuth;
+
+    await this.jobService.applyToJob(jobId, userId);
+
+    return;
+  }
 }

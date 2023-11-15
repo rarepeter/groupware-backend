@@ -25,4 +25,10 @@ export class JobService {
 
     return deletedJob;
   }
+
+  async applyToJob(jobId: Job['jobId'], applicantId: User['userId']) {
+    await this.db.applyToJob(jobId, applicantId)
+
+    return
+  }
 }
