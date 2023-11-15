@@ -130,6 +130,24 @@ export class FirestoreService implements OnApplicationBootstrap {
     return contactUsRequest;
   }
 
+  async getContactUsRequests() {
+    const contactUsRequestsCollectionRef = this.db.collection(
+      this.collectionNames.CONTACT_US_REQUESTS_COLLECTION,
+    );
+
+    const snippet = await contactUsRequestsCollectionRef.get();
+
+    if (snippet.empty) return [];
+
+    const docsData = snippet.docs.map((doc) => {
+      const docData = doc.data() as ContactUsRequest;
+
+      return docData;
+    });
+
+    return docsData;
+  }
+
   // VACATIONS OPERATIONS
 
   async getUserVacations(userId: User['userId']) {

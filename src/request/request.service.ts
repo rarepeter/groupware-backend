@@ -15,4 +15,10 @@ export class RequestService {
 
     return createdContactUsRequest;
   }
+
+  async getContactUsRequests() {
+    const contactUsRequests = await this.db.getContactUsRequests();
+
+    return contactUsRequests;
+  }
 }
